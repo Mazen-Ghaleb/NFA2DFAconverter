@@ -27,6 +27,8 @@ import json
 
 #     return Convert2DFA(nodes, edges)
 
+debugger = 0
+
 
 class Node:
     def __init__(self, name, typeOf, edgeIndices):
@@ -65,7 +67,7 @@ def Convert2DFA(nodes, edges, Alphabet):
     NFA_Table = CreateNFA_Table(nodes, edges, Alphabet)
     DFA_Table = CreateDFA_Table(nodes, edges, Alphabet, NFA_Table)
 
-    return NFA_Table
+    return NFA_Table, DFA_Table
 
 
 def CreateNFA_Table(nodes, edges, Alphabet):
@@ -93,28 +95,40 @@ def CreateDFA_Table(nodes, edges, Alphabet, NFA_Table):
     # Creates DFA Table
     startingNode = getEpsilonClosure(NFA_Table, nodes[0].name, nodes)
     tempSet = set()
-    NodeStart = repr(startingNode)
-    DFA_Table[NodeStart] = {}
+    DFA_Table[repr(startingNode)] = {}
     tempTable = {}
     while (DFA_Table != tempTable):
         tempTable = copy.deepcopy(DFA_Table)
-        for state in DFA_Table:
-            if DFA_Table[state] == {}:
+        for state in tempTable:
+            if (debugger == 1):
+                print("in state for loop", DFA_Table)
+            if DFA_Table[state] == {} and state != "Φ":
                 for alph in Alphabet[:-1]:
-                    DFA_Table[NodeStart][alph] = set()
-                    for element in eval(NodeStart):
-                        DFA_Table[NodeStart][alph].update(
+                    if (debugger == 1):
+                        print("in alph for loop", DFA_Table)
+                    DFA_Table[state][alph] = set()
+                    for element in eval(state):
+                        DFA_Table[state][alph].update(
                             NFA_Table[element][alph])
-
-                    for NewState in DFA_Table[NodeStart][alph]:
-                        tempSet.update(getEpsilonClosure(
-                            NFA_Table, NewState, nodes))
-                    DFA_Table[repr(tempSet)] = {}
+                        if (debugger == 1):
+                            print("in eval for loop", DFA_Table)
+                    if (DFA_Table[state][alph] != {"Φ"}):
+                        DFA_Table[state][alph].discard("Φ")
+                        for NewState in DFA_Table[state][alph]:
+                            tempSet.update(getEpsilonClosure(
+                                NFA_Table, NewState, nodes))
+                        if (repr(tempSet) not in DFA_Table):
+                            DFA_Table[repr(tempSet)] = {}
+                        if (debugger == 1):
+                            print("in new state for loop", DFA_Table)
+                    else:
+                        DFA_Table["Φ"] = {}
                     tempSet = set()
-            else:
-                break
-
-        print(DFA_Table)
+            elif state == "Φ":
+                for alph in Alphabet[:-1]:
+                    DFA_Table[state][alph] = set({"Φ"})
+        if (debugger == 1):
+            print(DFA_Table)
 
     # for edge in CurrentNode.edgeIndices:
     #     NFA_Table[CurrentNode.name][edges[edge].input].add(
@@ -128,8 +142,10 @@ def CreateDFA_Table(nodes, edges, Alphabet, NFA_Table):
 
 
 def getEpsilonClosure(NFA_Table, nodeName, AllNodes):
-    EpsilonEquvNodes = NFA_Table[nodeName]["ε"]
+    EpsilonEquvNodes = set()
+    EpsilonEquvNodes.update(NFA_Table[nodeName]["ε"])
     EpsilonEquvNodes.add(nodeName)
+    EpsilonEquvNodes.discard("Φ")
     return EpsilonEquvNodes
 
     # return returnedVisitedNodes
@@ -144,88 +160,144 @@ def getEpsilonClosure(NFA_Table, nodeName, AllNodes):
 # print(json.dumps(startProcessing(convertedJson)))
 
 # example
+# Alphapet = ["a", "b", "ε"]
+# startingNode = Node(1, "START", [0, 1])
+# garboNode1 = Node(2, "Normal", [2, 3])
+# garboNode2 = Node(3, "Normal", [4])
+# garboNode3 = Node(4, "Normal", [])
+# garboNode4 = Node(5, "GOAL", [5, 6])
+# nodes = [startingNode, garboNode1, garboNode2, garboNode3, garboNode4]
+
+# edge0 = Edge(1, 2, "ε")
+# edge1 = Edge(1, 3, "a")
+# edge2 = Edge(2, 5, "a")
+# edge3 = Edge(2, 4, "a")
+# edge4 = Edge(3, 4, "b")
+# edge5 = Edge(5, 4, "a")
+# edge6 = Edge(5, 4, "b")
+# edges = [edge0, edge1, edge2, edge3, edge4, edge5, edge6]
+
+# answer = Convert2DFA(nodes, edges, Alphapet)
+# print(answer[0], "\n \n \n", answer[1])
+
+# example2
+# Alphapet = ["a", "b", "ε"]
+# startingNode = Node(1, "START", [0, 1, 2])
+# garboNode4 = Node(2, "GOAL", [3, 4, 5])
+# nodes = [startingNode, garboNode4]
+
+# edge0 = Edge(1, 2, "a")
+# edge1 = Edge(1, 1, "a")
+# edge2 = Edge(1, 1, "b")
+# edge3 = Edge(2, 2, "a")
+# edge4 = Edge(2, 2, "b")
+# edge5 = Edge(2, 1, "b")
+# edges = [edge0, edge1, edge2, edge3, edge4, edge5]
+
+# answer = Convert2DFA(nodes, edges, Alphapet)
+# print(answer[0], "\n \n \n", answer[1])
+
+# example3
+# Alphapet = ["a", "b", "ε"]
+# startingNode = Node(1, "START", [0, 1, 2])
+# garboNode1 = Node(2, "NORMAL", [3])
+# garboNode2 = Node(3, "GOAL", [])
+# nodes = [startingNode, garboNode1, garboNode2]
+
+# edge0 = Edge(1, 1, "a")
+# edge1 = Edge(1, 1, "b")
+# edge2 = Edge(1, 2, "a")
+# edge3 = Edge(2, 3, "b")
+# edges = [edge0, edge1, edge2, edge3]
+
+# answer = Convert2DFA(nodes, edges, Alphapet)
+# print(answer[0], "\n \n \n", answer[1])
+
+# example4
+# Alphapet = ["a", "b", "ε"]
+# startingNode = Node(1, "START", [0])
+# garboNode1 = Node(2, "NORMAL", [1, 2])
+# garboNode2 = Node(3, "GOAL", [3, 4, 5])
+# garboNode3 = Node(4, "NORMAL", [6])
+# nodes = [startingNode, garboNode1, garboNode2, garboNode3]
+
+# edge0 = Edge(1, 4, "a")
+# edge1 = Edge(2, 2, "b")
+# edge2 = Edge(2, 3, "a")
+# edge3 = Edge(3, 1, "b")
+# edge4 = Edge(3, 4, "a")
+# edge5 = Edge(3, 4, "b")
+# edge6 = Edge(4, 3, "b")
+
+# edges = [edge0, edge1, edge2, edge3, edge4, edge5, edge6]
+
+# answer = Convert2DFA(nodes, edges, Alphapet)
+# print(answer[0], "\n \n \n", answer[1])
+
+# example5
 Alphapet = ["a", "b", "ε"]
-startingNode = Node(1, "START", [0, 1])
-garboNode1 = Node(2, "Normal", [2, 3])
-garboNode2 = Node(3, "Normal", [4])
-garboNode3 = Node(4, "Normal", [])
-garboNode4 = Node(5, "GOAL", [5, 6])
-nodes = [startingNode, garboNode1, garboNode2, garboNode3, garboNode4]
+startingNode = Node(1, "START", [0])
+garboNode1 = Node(2, "NORMAL", [1, 2, 3])
+garboNode2 = Node(3, "GOAL", [4])
+garboNode3 = Node(4, "GOAL", [5, 6])
+nodes = [startingNode, garboNode1, garboNode2, garboNode3]
 
 edge0 = Edge(1, 2, "ε")
-edge1 = Edge(1, 3, "a")
-edge2 = Edge(2, 5, "a")
-edge3 = Edge(2, 4, "a")
+edge1 = Edge(2, 1, "b")
+edge2 = Edge(2, 2, "a")
+edge3 = Edge(2, 3, "a")
 edge4 = Edge(3, 4, "b")
-edge5 = Edge(5, 4, "a")
-edge6 = Edge(5, 4, "b")
+edge5 = Edge(4, 1, "a")
+edge6 = Edge(4, 4, "a")
+
 edges = [edge0, edge1, edge2, edge3, edge4, edge5, edge6]
 
 answer = Convert2DFA(nodes, edges, Alphapet)
-print(answer)
+print(answer[0], "\n \n \n", answer[1])
 
-# example2
-# startingnode = Node("START",1,0,[0])
-# garbonode1 = Node ("Normal",1,0,[1,2])
-# garbonode2 = Node ("Normal",2,0,[3])
-# garbonode3 = Node ("Normal",3,0,[4])
-# goalnode = Node("GOAL",0,0,[])
-# nodes = [startingnode, garbonode1,garbonode2,garbonode3, goalnode]
+# example6
+# Alphapet = ["a", "b", "ε"]
+# startingNode = Node(1, "START", [0, 1])
+# garboNode1 = Node(2, "GOAL", [2, 3])
+# garboNode2 = Node(3, "NORMAL", [4])
+# garboNode3 = Node(4, "GOAL", [5, 6])
+# garboNode4 = Node(5, "NORMAL", [7, 8])
+# nodes = [startingNode, garboNode1, garboNode2, garboNode3, garboNode4]
 
-# edge0 = Edge(0,1,True,1)
-# edge1 = Edge(1,4,True,8)
-# edge2 = Edge(1,2,True,1)
-# edge3 = Edge(2,3,True,1)
-# edge4 = Edge(3,1,True,1)
-# edges = [edge0,edge1,edge2,edge3,edge4]
+# edge0 = Edge(1, 1, "b")
+# edge1 = Edge(1, 2, "a")
+# edge2 = Edge(2, 2, "a")
+# edge3 = Edge(2, 3, "ε")
+# edge4 = Edge(3, 4, "b")
+# edge5 = Edge(4, 3, "a")
+# edge6 = Edge(4, 2, "a")
+# edge7 = Edge(5, 1, "b")
+# edge8 = Edge(5, 4, "a")
 
-# answer = UCS(nodes,edges)
+# edges = [edge0, edge1, edge2, edge3, edge4, edge5, edge6, edge7, edge8]
 
-# example3
-# startingNode = Node("START",4,0,[0])
-# garboNode1 = Node ("Normal",2,0,[0,1,2])
-# garboNode2 = Node ("Normal",1,0,[1,3])
-# goalNode = Node("GOAL",0,0,[2,3])
-# nodes = [startingNode, garboNode1,garboNode2, goalNode]
+# answer = Convert2DFA(nodes, edges, Alphapet)
+# print(answer[0], "\n \n \n", answer[1])
 
-# edge0 = Edge(0,1,False,1)
-# edge1 = Edge(1,2,False,1)
-# edge2 = Edge(1,3,False,3)
-# edge3 = Edge(2,3,False,2)
-# edges = [edge0,edge1,edge2,edge3]
+# example7
+# Alphapet = ["a", "b", "ε"]
+# startingNode = Node(1, "START", [0, 1, 2])
+# garboNode1 = Node(2, "NORMAL", [3, 4, 5])
+# garboNode2 = Node(3, "GOAL", [6, 7, 8, 9])
+# nodes = [startingNode, garboNode1, garboNode2]
 
-# answer = UCS(nodes,edges)
+# edge0 = Edge(1, 2, "a")
+# edge1 = Edge(1, 2, "b")
+# edge2 = Edge(1, 3, "b")
+# edge3 = Edge(2, 1, "b")
+# edge4 = Edge(2, 3, "a")
+# edge5 = Edge(2, 3, "b")
+# edge6 = Edge(3, 1, "a")
+# edge7 = Edge(3, 1, "b")
+# edge8 = Edge(3, 2, "a")
+# edge9 = Edge(3, 2, "b")
 
-# example4
-# startingNode = Node("START",1,0,[0,1,2,3])
-# garboNode1 = Node ("Normal",1,0,[4])
-# garboNode2 = Node ("Normal",2,0,[5])
-# garboNode3 = Node ("Normal",3,0,[6])
-# garboNode4 = Node ("Normal",4,0,[7])
-# goalNode = Node("GOAL",0,0,[])
-# nodes = [startingNode, garboNode1,garboNode2,garboNode3,garboNode4, goalNode]
+# edges = [edge0, edge1, edge2, edge3, edge4, edge5, edge6, edge7, edge8, edge9]
 
-# edge0 = Edge(0,1,True,1)
-# edge1 = Edge(0,2,True,2)
-# edge2 = Edge(0,3,True,3)
-# edge3 = Edge(0,4,True,4)
-# edge4 = Edge(1,5,True,1)
-# edge5 = Edge(2,5,True,2)
-# edge6 = Edge(3,5,True,3)
-# edge7 = Edge(4,5,True,4)
-# edges = [edge0,edge1,edge2,edge3,edge4,edge5,edge6,edge7]
-
-# answer = UCS(nodes,edges)
-
-# example5
-# startingNode = Node("START",1,0,[0])
-# garboNode1 = Node ("Normal",1,0,[1])
-# garboNode2 = Node ("Normal",2,0,[2])
-# nodes = [startingNode, garboNode1,garboNode2]
-
-# edge0 = Edge(0,1,True,1)
-# edge1 = Edge(1,2,True,1)
-# edge2 = Edge(2,0,True,1)
-# edges = [edge0,edge1,edge2]
-
-# answer = UCS(nodes,edges)
+# answer = Convert2DFA(nodes, edges, Alphapet)
+# print(answer[0], "\n \n \n", answer[1])
