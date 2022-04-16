@@ -1,9 +1,10 @@
-from asyncio.windows_events import NULL
+# from asyncio.windows_events import NULL
 from automathon import DFA
 import queue
 import copy
 import json
 import numpy as np
+from os import system
 
 # jsonString = input()
 # convertedJson = json.loads(jsonString)
@@ -17,24 +18,22 @@ import numpy as np
 # out_file.close()
 # # End Copy
 
-# def startProcessing(convertedJson):
-#     nodes = []
-#     edges = []
+def startProcessing(convertedJson):
+    nodes = []
+    edges = []
     
-    
-#     for node in convertedJson["nodes"]:
-#         nodes.append(Node(node["name"], node["typeOf"], node["edgeIndices"]))
+    for node in convertedJson["nodes"]:
+        nodes.append(Node(node["name"], node["typeOf"], node["edgeIndices"]))
 
-#     for edge in convertedJson["edges"]:
-#         edges.append(Edge(edge["fromNode"], edge["toNode"], edge["input"]))
+    for edge in convertedJson["edges"]:
+        edges.append(Edge(edge["fromNode"], edge["toNode"], edge["input"]))
     
-#     Alphabet = convertedJson["alphabet"]
-#     startNode = convertedJson["startNode"]
-#     mode = convertedJson["mode"]
+    Alphabet = convertedJson["alphabet"]
+    startNode = convertedJson["startNode"]
+    mode = convertedJson["mode"]
 
-#     Result = Convert2DFA(nodes ,edges, Alphabet , startNode , mode)
-    
-#     return 
+    Result = Convert2DFA(nodes ,edges, Alphabet , startNode , mode)
+
 
 #Variable to help in debugging
 debugger = 0
@@ -70,10 +69,35 @@ def Convert2DFA(nodes, edges, Alphabet ,startNode , mode):
     #print(set(DFA_Structure.keys()),Alphabet[:-1], DFA_Structure,DFA_Start ,DFA_Final)
     automata1 = DFA(set(DFA_Structure.keys()),Alphabet[:-1], DFA_Structure,DFA_Start ,DFA_Final)
     print(automata1.isValid())
-    automata1.view("DFA")
+    system("pwd")
+    automata1.view("DFA.png")
+    # view(automata1, "DFA.png")
     
     return NFA_Table,DFA_Structure
 
+from graphviz import Digraph
+def view(self, fileName: str):
+    dot = Digraph(name=fileName)
+    
+    dot.graph_attr['rankdir'] = 'LR'
+    
+    dot.node("", "", shape='plaintext')
+    
+    for f in self.F:
+      dot.node(f, f, shape='doublecircle')
+    
+    for q in self.Q:
+      if q not in self.F:
+        dot.node(q, q, shape='circle')
+    
+    dot.edge("", self.initialState, label="")
+    
+    for q in self.delta:
+      for s in self.delta[q]:
+        dot.edge(q, self.delta[q][s], label=s)
+    
+    print(dot.source)
+    # dot.render()
 
 def getFinalNodes(nodes, edges):
     FinalNodes = set()
@@ -160,7 +184,7 @@ def getDFA_Structure(DFA_Table, FinalNodes):
                 DFAstructure[node][input] = "Φ"
         if node != 'Φ':
             if FinalNodes.intersection(eval(node)):
-                DFA_Final.add(node);
+                DFA_Final.add(node)
     return DFAstructure ,DFA_Final
 
 
@@ -172,7 +196,32 @@ def getEpsilonClosure(NFA_Table, nodeName):
     EpsilonEquvNodes.discard("Φ")
     return EpsilonEquvNodes
 
-
+startProcessing(json.loads("""
+{
+  "startNode":0,
+  "nodes":[
+    {
+      "name":0,
+      "typeOf":"FINAL",
+      "edgeIndices":[0]
+    },
+    {
+      "name":1,
+      "typeOf":"FINAL",
+      "edgeIndices":[0]
+    }
+  ],
+  "edges":[
+    {
+      "fromNode":0,
+      "toNode":1,
+      "input":"a"
+    }
+  ],
+  "alphabet":["a", "b", "c", "ε"],
+  "mode":0
+}
+"""))
 # # Start Copy
 # out_file = open(path, "w")
 # json.dump(startProcessing(convertedJson), out_file)
@@ -181,25 +230,25 @@ def getEpsilonClosure(NFA_Table, nodeName):
 # print(json.dumps(startProcessing(convertedJson)))
 
 # example
-Alphapet = ["a", "b", "ε"]
-startingNode = Node(1, "START", [0, 1])
-garboNode1 = Node(2, "Normal", [2, 3])
-garboNode2 = Node(3, "Normal", [4])
-garboNode3 = Node(4, "Normal", [])
-garboNode4 = Node(5, "FINAL", [5, 6])
-nodes = [startingNode, garboNode1, garboNode2, garboNode3, garboNode4]
+# Alphapet = ["a", "b", "ε"]
+# startingNode = Node(1, "START", [0, 1])
+# garboNode1 = Node(2, "Normal", [2, 3])
+# garboNode2 = Node(3, "Normal", [4])
+# garboNode3 = Node(4, "Normal", [])
+# garboNode4 = Node(5, "FINAL", [5, 6])
+# nodes = [startingNode, garboNode1, garboNode2, garboNode3, garboNode4]
 
-edge0 = Edge(1, 2, "ε")
-edge1 = Edge(1, 3, "a")
-edge2 = Edge(2, 5, "a")
-edge3 = Edge(2, 4, "a")
-edge4 = Edge(3, 4, "b")
-edge5 = Edge(5, 4, "a")
-edge6 = Edge(5, 4, "b")
-edges = [edge0, edge1, edge2, edge3, edge4, edge5, edge6]
+# edge0 = Edge(1, 2, "ε")
+# edge1 = Edge(1, 3, "a")
+# edge2 = Edge(2, 5, "a")
+# edge3 = Edge(2, 4, "a")
+# edge4 = Edge(3, 4, "b")
+# edge5 = Edge(5, 4, "a")
+# edge6 = Edge(5, 4, "b")
+# edges = [edge0, edge1, edge2, edge3, edge4, edge5, edge6]
 
-answer = Convert2DFA(nodes, edges, Alphapet,0 , False)
-print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA Structure is \n",answer[1])
+# answer = Convert2DFA(nodes, edges, Alphapet,0 , False)
+# print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA Structure is \n",answer[1])
 
 # example2
 # Alphapet = ["a", "b", "ε"]
