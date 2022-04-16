@@ -1,4 +1,5 @@
 from asyncio.windows_events import NULL
+from automathon import DFA
 import queue
 import copy
 import json
@@ -19,13 +20,21 @@ import numpy as np
 # def startProcessing(convertedJson):
 #     nodes = []
 #     edges = []
+    
+    
 #     for node in convertedJson["nodes"]:
 #         nodes.append(Node(node["name"], node["typeOf"], node["edgeIndices"]))
 
 #     for edge in convertedJson["edges"]:
 #         edges.append(Edge(edge["fromNode"], edge["toNode"], edge["input"]))
+    
+#     Alphabet = convertedJson["alphabet"]
+#     startNode = convertedJson["startNode"]
+#     mode = convertedJson["mode"]
 
-#     return Convert2DFA(nodes, edges)
+#     Result = Convert2DFA(nodes ,edges, Alphabet , startNode , mode)
+    
+#     return 
 
 #Variable to help in debugging
 debugger = 0
@@ -55,10 +64,15 @@ def Convert2DFA(nodes, edges, Alphabet ,startNode , mode):
     # startingNode = nodes[0]
     FinalNodes = getFinalNodes(nodes, edges)
     NFA_Table = CreateNFA_Table(nodes, edges, Alphabet)
-    DFA_Table = CreateDFA_Table(nodes, edges, Alphabet,startNode, NFA_Table,mode)
+    DFA_Table ,DFA_Start = CreateDFA_Table(nodes, edges, Alphabet,startNode, NFA_Table,mode)
     DFA_Structure ,DFA_Final = getDFA_Structure(DFA_Table, FinalNodes)
 
-    return NFA_Table,DFA_Table,DFA_Structure,DFA_Final
+    #print(set(DFA_Structure.keys()),Alphabet[:-1], DFA_Structure,DFA_Start ,DFA_Final)
+    automata1 = DFA(set(DFA_Structure.keys()),Alphabet[:-1], DFA_Structure,DFA_Start ,DFA_Final)
+    print(automata1.isValid())
+    automata1.view("DFA")
+    
+    return NFA_Table,DFA_Structure
 
 
 def getFinalNodes(nodes, edges):
@@ -132,7 +146,7 @@ def CreateDFA_Table(nodes, edges, Alphabet,startNode, NFA_Table,mode):
         if (debugger == 1):
             print(DFA_Table)
 
-    return DFA_Table
+    return DFA_Table,repr(startingNode)
 
 def getDFA_Structure(DFA_Table, FinalNodes):
     #Creates the DFA structure
@@ -167,25 +181,25 @@ def getEpsilonClosure(NFA_Table, nodeName):
 # print(json.dumps(startProcessing(convertedJson)))
 
 # example
-# Alphapet = ["a", "b", "ε"]
-# startingNode = Node(1, "START", [0, 1])
-# garboNode1 = Node(2, "Normal", [2, 3])
-# garboNode2 = Node(3, "Normal", [4])
-# garboNode3 = Node(4, "Normal", [])
-# garboNode4 = Node(5, "FINAL", [5, 6])
-# nodes = [startingNode, garboNode1, garboNode2, garboNode3, garboNode4]
+Alphapet = ["a", "b", "ε"]
+startingNode = Node(1, "START", [0, 1])
+garboNode1 = Node(2, "Normal", [2, 3])
+garboNode2 = Node(3, "Normal", [4])
+garboNode3 = Node(4, "Normal", [])
+garboNode4 = Node(5, "FINAL", [5, 6])
+nodes = [startingNode, garboNode1, garboNode2, garboNode3, garboNode4]
 
-# edge0 = Edge(1, 2, "ε")
-# edge1 = Edge(1, 3, "a")
-# edge2 = Edge(2, 5, "a")
-# edge3 = Edge(2, 4, "a")
-# edge4 = Edge(3, 4, "b")
-# edge5 = Edge(5, 4, "a")
-# edge6 = Edge(5, 4, "b")
-# edges = [edge0, edge1, edge2, edge3, edge4, edge5, edge6]
+edge0 = Edge(1, 2, "ε")
+edge1 = Edge(1, 3, "a")
+edge2 = Edge(2, 5, "a")
+edge3 = Edge(2, 4, "a")
+edge4 = Edge(3, 4, "b")
+edge5 = Edge(5, 4, "a")
+edge6 = Edge(5, 4, "b")
+edges = [edge0, edge1, edge2, edge3, edge4, edge5, edge6]
 
-# answer = Convert2DFA(nodes, edges, Alphapet,0 , False)
-# print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA TABLE is \n", answer[1],"\nThe DFA Structure is \n",answer[2],"\nThe DFA Final State(s) is/are \n",answer[3])
+answer = Convert2DFA(nodes, edges, Alphapet,0 , False)
+print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA Structure is \n",answer[1])
 
 # example2
 # Alphapet = ["a", "b", "ε"]
@@ -202,7 +216,8 @@ def getEpsilonClosure(NFA_Table, nodeName):
 # edges = [edge0, edge1, edge2, edge3, edge4, edge5]
 
 # answer = Convert2DFA(nodes, edges, Alphapet,0 , False)
-# print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA TABLE is \n", answer[1],"\nThe DFA Structure is \n",answer[2],"\nThe DFA Final State(s) is/are \n",answer[3])
+# print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA Structure is \n",answer[1])
+
 
 # example3
 # Alphapet = ["a", "b", "ε"]
@@ -218,7 +233,8 @@ def getEpsilonClosure(NFA_Table, nodeName):
 # edges = [edge0, edge1, edge2, edge3]
 
 # answer = Convert2DFA(nodes, edges, Alphapet,0 , True)
-# print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA TABLE is \n", answer[1],"\nThe DFA Structure is \n",answer[2],"\nThe DFA Final State(s) is/are \n",answer[3])
+# print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA Structure is \n",answer[1])
+
 
 # example4
 # Alphapet = ["a", "b", "ε"]
@@ -239,7 +255,8 @@ def getEpsilonClosure(NFA_Table, nodeName):
 # edges = [edge0, edge1, edge2, edge3, edge4, edge5, edge6]
 
 # answer = Convert2DFA(nodes, edges, Alphapet,0 , False)
-# print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA TABLE is \n", answer[1],"\nThe DFA Structure is \n",answer[2],"\nThe DFA Final State(s) is/are \n",answer[3])
+# print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA Structure is \n",answer[1])
+
 
 # example5
 # Alphapet = ["a", "b", "ε"]
@@ -260,7 +277,8 @@ def getEpsilonClosure(NFA_Table, nodeName):
 # edges = [edge0, edge1, edge2, edge3, edge4, edge5, edge6]
 
 # answer = Convert2DFA(nodes, edges, Alphapet,0 , True)
-# print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA TABLE is \n", answer[1],"\nThe DFA Structure is \n",answer[2],"\nThe DFA Final State(s) is/are \n",answer[3])
+# print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA Structure is \n",answer[1])
+
 
 # example6
 # Alphapet = ["a", "b", "ε"]
@@ -284,7 +302,8 @@ def getEpsilonClosure(NFA_Table, nodeName):
 # edges = [edge0, edge1, edge2, edge3, edge4, edge5, edge6, edge7, edge8]
 
 # answer = Convert2DFA(nodes, edges, Alphapet,0 , True)
-# print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA TABLE is \n", answer[1],"\nThe DFA Structure is \n",answer[2],"\nThe DFA Final State(s) is/are \n",answer[3])
+# print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA Structure is \n",answer[1])
+
 
 # example7
 # Alphapet = ["a", "b", "ε"]
@@ -307,4 +326,5 @@ def getEpsilonClosure(NFA_Table, nodeName):
 # edges = [edge0, edge1, edge2, edge3, edge4, edge5, edge6, edge7, edge8, edge9]
 
 # answer = Convert2DFA(nodes, edges, Alphapet,0 , False)
-# print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA TABLE is \n", answer[1],"\nThe DFA Structure is \n",answer[2],"\nThe DFA Final State(s) is/are \n",answer[3])
+# print("\nThe NFA TABLE is \n",answer[0], "\nThe DFA Structure is \n",answer[1])
+
