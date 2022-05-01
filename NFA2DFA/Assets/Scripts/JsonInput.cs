@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.Linq;
 
 [Serializable]
 public class JsonInput
@@ -9,6 +10,7 @@ public class JsonInput
     [Serializable]
     public class JsonNode
     {
+        public string name;
         public string typeOf;
         // public float heuristic;
         // public int depth;
@@ -16,6 +18,8 @@ public class JsonInput
         
         public JsonNode(Node node, List<Edge> edges, bool isStartNode)
         {
+            this.name = node.nodeName;
+
             this.typeOf = node.isGoal ? "FINAL" : "NORMAL"; 
             // this.heuristic = node.heuristic;
             // this.depth = 0;
@@ -32,30 +36,38 @@ public class JsonInput
     [Serializable]
     public class JsonEdge
     {
-        public int fromNode;
-        public int toNode;
+        public string fromNode;
+        public string toNode;
+        // public int fromNode;
+        // public int toNode;
+        public string input;
         // public bool isDirected;
         // public float weight;
 
         public JsonEdge(Edge edge, List<Node> nodes)
         {
-            this.fromNode = nodes.IndexOf(edge.fromNode);
-            this.toNode = nodes.IndexOf(edge.toNode);
+            // this.fromNode = nodes.IndexOf(edge.fromNode);
+            // this.toNode = nodes.IndexOf(edge.toNode);
+            this.fromNode = edge.fromNode.nodeName;
+            this.toNode = edge.toNode.nodeName;
+            this.input = edge.trigger;
             // this.isDirected = edge.isDirected;
             // this.weight = edge.weight;
         }
     }
 
-    public string algorithm;
+    // public string algorithm;
     public int startNode;
-    public int maxDepth;
+    // public int maxDepth;
     public JsonNode[] nodes;
     public JsonEdge[] edges;
+    public string[] alphabet;
+    public int mode;
 
     public JsonInput(UIManager.SearchAlgorithm algorithm, int maxDepth, Node startNode, List<Node> nodes, List<Edge> edges)
     {
-        this.algorithm = algorithm.ToString();
-        this.maxDepth = maxDepth;
+        // this.algorithm = algorithm.ToString();
+        // this.maxDepth = maxDepth;
         this.startNode = nodes.IndexOf(startNode);
 
         this.nodes = new JsonNode[nodes.Count];
@@ -65,5 +77,14 @@ public class JsonInput
         this.edges = new JsonEdge[edges.Count];
         for(int i = 0; i < edges.Count; i++)
             this.edges[i] = new JsonEdge(edges[i], nodes);
+
+        List<string> alphabet = new List<string>();
+        for(int i = 0; i < edges.Count; i++)
+            alphabet.AddRange(edges[i].trigger.Split(',').Distinct().ToArray());
+
+        alphabet.Add("");
+        this.alphabet = alphabet.Distinct().ToArray();
+
+        this.mode = 0;
     }
 }

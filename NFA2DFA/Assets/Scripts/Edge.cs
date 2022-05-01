@@ -23,9 +23,9 @@ public class Edge : MonoBehaviour
         get { return state != EdgeState.TWO_WAY; }
     }
 
-    // public float weight {
-    //     get { return float.Parse(weightInputField.text); }
-    // }
+    public string trigger {
+        get { return weightInputField.text; }
+    }
 
     public bool interactable {
         get {

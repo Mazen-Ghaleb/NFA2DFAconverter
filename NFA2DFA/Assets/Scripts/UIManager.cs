@@ -5,10 +5,15 @@ using UnityEngine.UI;
 using System.Text;
 using System;
 using System.IO;
+using System.Web;
+using System.Runtime.InteropServices;
 
 public class UIManager : MonoBehaviour
 {
     const string charSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    [DllImport("__Internal")]
+    private static extern void fromUnityDisplayDFA(string str);
 
     [Serializable]
     public enum SearchAlgorithm
@@ -100,7 +105,7 @@ public class UIManager : MonoBehaviour
         }
 
         singleton = this;
-        Application.targetFrameRate = targetFrameRate;
+        // Application.targetFrameRate = targetFrameRate;
     }
 
     private void Start()
@@ -185,18 +190,19 @@ public class UIManager : MonoBehaviour
 
         JsonInput input = GenerateJSON();//JsonUtility.ToJson(
         
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-        // TextAsset program = chosenScript.Value.EXE;
-        TextAsset program = script.EXE;
-        string extension = "exe";
-#else
-        // TextAsset program = chosenScript.Value.ELF;
-        TextAsset program = script.ELF;
-        string extension = "elf";
-#endif
-        lastOutput = ExecutePythonScript(program, extension, input); 
+// #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+//         // TextAsset program = chosenScript.Value.EXE;
+//         TextAsset program = script.EXE;
+//         string extension = "exe";
+// #else
+//         // TextAsset program = chosenScript.Value.ELF;
+//         TextAsset program = script.ELF;
+//         string extension = "elf";
+// #endif
+        // lastOutput = ExecutePythonScript(input); 
+        ExecutePythonScript(input); 
 
-        RunVizualizationAsync();
+        // RunVizualizationAsync();
     }
 
     public void RunVizualizationAsync()
@@ -268,34 +274,38 @@ public class UIManager : MonoBehaviour
         if(allowed) UpdateUI();
     }
 
-    private JsonOutput ExecutePythonScript(TextAsset script, string extension, JsonInput input)
+    private void ExecutePythonScript(JsonInput input)
     {
-        string path = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + "." + extension);
-        string jsonPath = path + ".json";
-        print(path); // TODO
-        print(jsonPath); // TODO
+//         string path = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + "." + extension);
+//         string jsonPath = path + ".json";
+//         print(path); // TODO
+//         print(jsonPath); // TODO
 
-        File.WriteAllBytes(path, script.bytes);
-#if UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX || UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
-        System.Diagnostics.Process.Start("chmod", "+x " + path).WaitForExit();
-#endif
+//         File.WriteAllBytes(path, script.bytes);
+// #if UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX || UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
+//         System.Diagnostics.Process.Start("chmod", "+x " + path).WaitForExit();
+// #endif
         string jsonString = JsonUtility.ToJson(input);
         print(jsonString);
-        File.WriteAllText(jsonPath, jsonString);
+        // jsonString = HttpUtility.UrlEncode(jsonString);
+        // print(jsonString);
+        fromUnityDisplayDFA(jsonString);
 
-        System.Diagnostics.ProcessStartInfo info = new System.Diagnostics.ProcessStartInfo(path);
-        info.Arguments = "\""+System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jsonPath))+"\"";
-        print(info.Arguments); // TODO
-        using(System.Diagnostics.Process process = System.Diagnostics.Process.Start(info))
-            process.WaitForExit();
+        // File.WriteAllText(jsonPath, jsonString);
 
-        File.Delete(path);
-        jsonString = File.ReadAllText(jsonPath);
-        print(jsonString);
-        File.Delete(jsonPath);
+        // System.Diagnostics.ProcessStartInfo info = new System.Diagnostics.ProcessStartInfo(path);
+        // info.Arguments = "\""+System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jsonPath))+"\"";
+        // print(info.Arguments); // TODO
+        // using(System.Diagnostics.Process process = System.Diagnostics.Process.Start(info))
+        //     process.WaitForExit();
 
-        JsonOutput output = JsonUtility.FromJson<JsonOutput>(jsonString);
-        return output;
+        // File.Delete(path);
+        // jsonString = File.ReadAllText(jsonPath);
+        // print(jsonString);
+        // File.Delete(jsonPath);
+
+        // JsonOutput output = JsonUtility.FromJson<JsonOutput>(jsonString);
+        // return output;
     }
 
     private IEnumerator RunVisualization(JsonOutput output) 
