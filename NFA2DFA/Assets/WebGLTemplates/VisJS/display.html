@@ -43,8 +43,17 @@
 
             const queryString = window.location.search;
             const urlParams = new URLSearchParams(queryString);
-            const nfaJson = urlParams.get('nfa')
+            let nfaJson = urlParams.get('nfa')
+
             console.log(nfaJson);
+            nfaJson = JSON.parse(nfaJson);
+            for(let i = 0; i < nfaJson["alphabet"].length; i++)
+                if(nfaJson["alphabet"][i] == "") nfaJson["alphabet"][i] = "ε";
+            for(let i = 0; i < nfaJson["edges"].length; i++)
+                if(nfaJson["edges"][i]["input"] == "") nfaJson["edges"][i]["input"] = "ε";
+            nfaJson = JSON.stringify(nfaJson);
+            console.log(nfaJson);
+
             const dfa = JSON.parse(window.pythonNFA2DFA(nfaJson))
             // const dfa = JSON.parse(dfaJson)
             console.log(dfa);

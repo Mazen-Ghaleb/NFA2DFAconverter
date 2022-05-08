@@ -1216,7 +1216,7 @@ def getEpsilonClosure(NFA_Table, nodeName):
     # print(NFA_Table)
     # print(nodeName)
     EpsilonEquvNodes = set()
-    EpsilonEquvNodes.update(NFA_Table[nodeName][""])
+    EpsilonEquvNodes.update(NFA_Table[nodeName]["ε"])
     EpsilonEquvNodes.add(nodeName)
     EpsilonEquvNodes.discard("Φ")
     return EpsilonEquvNodes
