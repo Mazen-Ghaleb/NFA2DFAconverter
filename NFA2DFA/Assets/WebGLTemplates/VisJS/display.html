@@ -47,6 +47,7 @@
 
             console.log(nfaJson);
             nfaJson = JSON.parse(nfaJson);
+            nfaJson["mode"] = 1;
             for(let i = 0; i < nfaJson["alphabet"].length; i++)
                 if(nfaJson["alphabet"][i] == "") nfaJson["alphabet"][i] = "ε";
             for(let i = 0; i < nfaJson["edges"].length; i++)
@@ -81,7 +82,19 @@
                 toStates = Object.values(transitionsOfStates[i])
                 
                 for(let j = 0; j < triggers.length; j++)
-                    edges.push({ from: fromState, to: toStates[j], label: triggers[j], arrows: "to" })
+                {
+                    let found = false;
+                    for(let k = 0; k < edges.length; k++)
+                    {
+                        if(edges[k].from == fromState && edges[k].to == toStates[j])
+                        {
+                            edges[k].label = edges[k].label + "," + triggers[j];
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(!found) edges.push({ from: fromState, to: toStates[j], label: triggers[j], arrows: "to" })
+                }
             }
             edges = new vis.DataSet(edges)
             

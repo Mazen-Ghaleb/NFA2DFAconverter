@@ -1,54 +1,7 @@
-import queue
-import copy
-import json
-
-# Copied from automathon
-
-
-class Error(Exception):
-    """Base class for exceptions in this module."""
-    pass
-
-
-class InputError(Error):
-    """Exception raised for errors in the input.
-
-    Attributes
-    - - - - - - - - - - - - - - - - - -
-
-      expression : str
-        Input expression in which the error ocurred.
-
-      message : str
-        Explaination of the error.
-    """
-
-    def __init__(self, expression, message):
-        self.expression = expression
-        self.message = message
-
-
-class SigmaError(Error):
-    """Exception raised for errors in the transition.
-
-    Attributes
-    - - - - - - - - - - - - - - - - - -
-
-      expression : str
-        Input expression in which the error ocurred.
-
-      message : str
-        Explaination of the error.
-    """
-
-    def __init__(self, expression, message):
-        self.expression = expression
-        self.message = message
-
+import copy, json
 
 # Variable to help in debugging
 debugger = 0
-
 
 def startProcessing(convertedJson):
     nodes = []
@@ -100,7 +53,20 @@ def startProcessing(convertedJson):
     print("\nAfter Mapping : ")
     print("The Result in format :\n", set(Result2[1].keys()),
           Alphabet[:-1], Result2[1], Result2[2], Result2[3])
+    
+    # print(list(set(Result2[1].keys())))
+    # print(Result2[1])
+    # print("BRROROOo")
 
+    # Result2 for
+
+    return json.dumps({
+      "states": list(set(Result2[1].keys())),
+      "alphabet": Alphabet[:-1],
+      "transitions": Result2[1],
+      "initial": repr(Result2[2]),
+      "final": list(Result2[3])
+    })
 
 def StatesToNumbers(convertedJson):
     MappingStatestoNumber = {}
@@ -153,8 +119,8 @@ def NumberToStates(Result, MappingNumberstoStates, Alphabet):
 
         for alph in Alphabet[:-1]:
             if (Result2DFA[temp][alph] != 'Φ'):
-                Result2DFA[temp][alph] = SetNumbersToStates(
-                    eval(Result2DFA[temp][alph]), MappingNumberstoStates)
+                Result2DFA[temp][alph] = repr(SetNumbersToStates(
+                    eval(Result2DFA[temp][alph]), MappingNumberstoStates))
 
     # print(Result2DFA)
 
@@ -169,7 +135,7 @@ def NumberToStates(Result, MappingNumberstoStates, Alphabet):
 
     # print(Result2DFAFinal)
 
-    return Result2NFA, Result2DFA, Result2DFAStart, Result2DFAFinal
+    return Result2NFA, Result2DFA, Result2DFAStart, list(Result2DFAFinal)
 
 
 class Node:
@@ -310,7 +276,6 @@ def pythonNFA2DFA(jsonString):
     print(json.dumps(json.loads(jsonString)))
     return startProcessing(json.loads(jsonString))
 
-
 try:
     from browser import window
     from javascript import JSON
@@ -318,7 +283,8 @@ try:
     json.dumps = JSON.stringify
     window.pythonNFA2DFA = pythonNFA2DFA
 except ImportError:
-    in_j = '{"startNode":0,"nodes":[{"name":"A","typeOf":"NORMAL","edgeIndices":[0]},{"name":"B","typeOf":"FINAL","edgeIndices":[]}],"edges":[{"fromNode":"A","toNode":"B","input":"1"}],"alphabet":["1",""],"mode":0}'
+    in_j = '{"startNode":0,"nodes":[{"name":"1","typeOf":"NORMAL","edgeIndices":[0,5]},{"name":"2","typeOf":"NORMAL","edgeIndices":[1,3]},{"name":"5","typeOf":"FINAL","edgeIndices":[2]},{"name":"4","typeOf":"NORMAL","edgeIndices":[]},{"name":"3","typeOf":"NORMAL","edgeIndices":[4]}],"edges":[{"fromNode":"1","toNode":"2","input":"ε"},{"fromNode":"2","toNode":"5","input":"a"},{"fromNode":"5","toNode":"4","input":"a,b"},{"fromNode":"2","toNode":"4","input":"a"},{"fromNode":"3","toNode":"4","input":"b"},{"fromNode":"1","toNode":"3","input":"a"}],"alphabet":["a","b","ε"],"mode":0} '
+    # in_j = '{"startNode":0,"nodes":[{"name":"A","typeOf":"NORMAL","edgeIndices":[0]},{"name":"B","typeOf":"FINAL","edgeIndices":[]}],"edges":[{"fromNode":"A","toNode":"B","input":"1"}],"alphabet":["1","ε"],"mode":0}'
     out_j = pythonNFA2DFA(in_j)
     print()
     print(out_j)

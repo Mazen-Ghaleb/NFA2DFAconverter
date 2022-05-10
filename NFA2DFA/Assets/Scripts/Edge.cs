@@ -75,6 +75,8 @@ public class Edge : MonoBehaviour
             Edge existingEdge = UIManager.singleton.GetEdge(fromNode, node);
             if(existingEdge)
             {
+                // existingEdge.weightInputField.text = existingEdge.weightInputField.text + ",";
+                // existingEdge.weightInputField.text.position = existingEdge.weightInputField.text.Length - 1;
                 existingEdge.weightInputField.Select();
                 UIManager.singleton.DeleteEdge(this);
                 return;

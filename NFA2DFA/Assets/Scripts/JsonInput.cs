@@ -16,17 +16,16 @@ public class JsonInput
         // public int depth;
         public int[] edgeIndices;
         
-        public JsonNode(Node node, List<Edge> edges, bool isStartNode)
+        public JsonNode(string node, bool isGoal,  JsonEdge[] edges, bool isStartNode)
         {
-            this.name = node.nodeName;
-
-            this.typeOf = node.isGoal ? "FINAL" : "NORMAL"; 
+            this.name = node;
+            this.typeOf = isGoal ? "FINAL" : "NORMAL"; 
             // this.heuristic = node.heuristic;
             // this.depth = 0;
 
             List<int> edgeIndices = new List<int>();
-            for(int i = 0; i < edges.Count; i++)
-                if(edges[i].fromNode == node || (edges[i].toNode == node && !edges[i].isDirected))
+            for(int i = 0; i < edges.Count(); i++)
+                if(edges[i].fromNode == node)
                     edgeIndices.Add(i);
                     
             this.edgeIndices = edgeIndices.ToArray();
@@ -44,13 +43,13 @@ public class JsonInput
         // public bool isDirected;
         // public float weight;
 
-        public JsonEdge(Edge edge, List<Node> nodes)
+        public JsonEdge(Edge edge, string trigger)
         {
             // this.fromNode = nodes.IndexOf(edge.fromNode);
             // this.toNode = nodes.IndexOf(edge.toNode);
             this.fromNode = edge.fromNode.nodeName;
             this.toNode = edge.toNode.nodeName;
-            this.input = edge.trigger;
+            this.input = trigger;
             // this.isDirected = edge.isDirected;
             // this.weight = edge.weight;
         }
@@ -66,21 +65,31 @@ public class JsonInput
 
     public JsonInput(UIManager.SearchAlgorithm algorithm, int maxDepth, Node startNode, List<Node> nodes, List<Edge> edges)
     {
+        List<JsonEdge> newEdges = new List<JsonEdge>();
+        for(int i = 0; i < edges.Count(); i++)
+        {
+            string[] triggers = edges[i].trigger.Split(',').Distinct().ToArray();
+
+            for(int j = 0; j < triggers.Length; j++)
+                newEdges.Add(new JsonEdge(edges[i], triggers[j]));
+        }
+        this.edges = newEdges.ToArray();
+
         // this.algorithm = algorithm.ToString();
         // this.maxDepth = maxDepth;
         this.startNode = nodes.IndexOf(startNode);
 
         this.nodes = new JsonNode[nodes.Count];
         for(int i = 0; i < nodes.Count; i++)
-            this.nodes[i] = new JsonNode(nodes[i], edges, nodes[i] == startNode);
+            this.nodes[i] = new JsonNode(nodes[i].nodeName, nodes[i].isGoal, this.edges, nodes[i] == startNode);
 
-        this.edges = new JsonEdge[edges.Count];
-        for(int i = 0; i < edges.Count; i++)
-            this.edges[i] = new JsonEdge(edges[i], nodes);
+        // this.edges = new JsonEdge[edges.Count];
+        // for(int i = 0; i < edges.Count; i++)
+        //     this.edges[i] = new JsonEdge(edges[i], nodes);
 
         List<string> alphabet = new List<string>();
-        for(int i = 0; i < edges.Count; i++)
-            alphabet.AddRange(edges[i].trigger.Split(',').Distinct().ToArray());
+        for(int i = 0; i < this.edges.Count(); i++)
+            alphabet.Add(this.edges[i].input);
 
         alphabet.Add("");
         this.alphabet = alphabet.Distinct().ToArray();
