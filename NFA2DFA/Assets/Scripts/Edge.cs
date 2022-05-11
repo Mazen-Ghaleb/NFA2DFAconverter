@@ -96,6 +96,7 @@ public class Edge : MonoBehaviour
 
     public void PointerClick()
     {
+        // print("GAMEWWWWWWWWWWWW");
         if(!editable) return;
         UIManager.singleton.DeleteEdge(this);
         
