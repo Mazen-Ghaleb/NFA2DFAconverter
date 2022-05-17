@@ -98,8 +98,8 @@
 
         const dfa = JSON.parse(window.pythonNFA2DFA(StringNfaJson));
         console.log(dfa);
-        nfaTableVar = dfa['nfaTable'];
-        dfaTableVar = dfa['dfaTable'];
+        let nfaTableVar = dfa['nfaTable'];
+        let dfaTableVar = dfa['dfaTable'];
         console.log(nfaTableVar);
 
         //NFA Table

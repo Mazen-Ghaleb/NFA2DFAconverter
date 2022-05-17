@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using System.Linq;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 // [RequireComponent(typeof(RectTransform))]
@@ -123,11 +124,15 @@ public class Edge : MonoBehaviour
     {
         WeightValueChanged();
 
-        string[] symbols = weightInputField.text.Split(',');
-        symbols = symbols.Distinct().ToArray();
+        string[] symbols = weightInputField.text.Split(',').Distinct().ToArray();
+        string[] alphabet = UIManager.singleton.alphabet;
 
-        weightInputField.text = String.Join(",", symbols);
+        List<string> finalSymbols = new List<string>();
+        foreach(string symbol in symbols)
+            if(Array.Exists(alphabet, element => element == symbol))
+                finalSymbols.Add(symbol);
 
+        weightInputField.text = String.Join(",", finalSymbols);
         // weightInputField.text = Regex.Replace(weightInputField.text, @"[^a-zA-Z0-9,]", "");
     }
 

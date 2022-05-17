@@ -6,7 +6,9 @@ using System.Text;
 using System;
 using System.IO;
 using System.Web;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 public class UIManager : MonoBehaviour
 {
@@ -51,13 +53,24 @@ public class UIManager : MonoBehaviour
 
     public bool deleteFlag
     {
-        get
-        {
+        get {
             foreach(KeyCode key in deleteKeys)
                 if(Input.GetKey(key))
                     return true;
             
             return false;
+        }
+    }
+
+    public string[] alphabet {
+        get {
+            return alphabetInputField.text.Split(',');
+        }
+    }
+
+    public bool mode {
+        get {
+            return modeToggle.isOn;
         }
     }
 
@@ -69,7 +82,6 @@ public class UIManager : MonoBehaviour
         [SerializeField] public TextAsset EXE;
     }
 
-    [SerializeField] private int targetFrameRate = 30;
     [SerializeField] private Color activeNodeColor = Color.blue;
     [SerializeField] private Color pathNodeColor = Color.green;
     [SerializeField] private Transform visualizeUI;
@@ -82,6 +94,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Dropdown startNodeDropdown;
     [SerializeField] private Dropdown searchAlgorithmDropdown;
     [SerializeField] private InputField maxDepthInputField;
+    [SerializeField] private InputField alphabetInputField;
+    [SerializeField] private Toggle modeToggle;
     [SerializeField] private Button runSearchButton;
     [SerializeField] private Button addNodeButton;
     [SerializeField] private KeyCode[] deleteKeys;
@@ -272,6 +286,24 @@ public class UIManager : MonoBehaviour
         addNodeButton.interactable = allowed;
 
         if(allowed) UpdateUI();
+    }
+
+    public void AlphabetValueChanged()
+    {
+        alphabetInputField.text = Regex.Replace(alphabetInputField.text, @"[^a-zA-Z0-9,]", "");
+    }
+
+    public void AlphabetUpdated()
+    {
+        AlphabetValueChanged();
+
+        string[] symbols = alphabetInputField.text.Split(',').Distinct().ToArray();
+
+        List<string> finalSymbols = new List<string>(symbols);
+        finalSymbols.Remove("");
+        finalSymbols.Add("");
+
+        alphabetInputField.text = String.Join(",", finalSymbols);
     }
 
     private void ExecutePythonScript(JsonInput input)

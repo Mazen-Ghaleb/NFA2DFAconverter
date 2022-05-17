@@ -87,13 +87,14 @@ public class JsonInput
         // for(int i = 0; i < edges.Count; i++)
         //     this.edges[i] = new JsonEdge(edges[i], nodes);
 
-        List<string> alphabet = new List<string>();
-        for(int i = 0; i < this.edges.Count(); i++)
-            alphabet.Add(this.edges[i].input);
+        // List<string> alphabet = new List<string>();
+        // for(int i = 0; i < this.edges.Count(); i++)
+        //     alphabet.Add(this.edges[i].input);
 
-        alphabet.Add("");
-        this.alphabet = alphabet.Distinct().ToArray();
+        // alphabet.Add("");
+        // this.alphabet = UIalphabet.Distinct().ToArray();
+        this.alphabet = UIManager.singleton.alphabet;
 
-        this.mode = 0;
+        this.mode = UIManager.singleton.mode ? 1 : 0;
     }
 }
