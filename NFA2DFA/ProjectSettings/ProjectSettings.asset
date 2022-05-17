@@ -12,7 +12,7 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: 'Mazen MostafaAndMohamedMokhtar '
+  companyName: NFA2DFACompany
   productName: NFA To DFA Converter
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
