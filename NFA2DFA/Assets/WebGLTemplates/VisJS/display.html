@@ -1,128 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Converted NFA</title>
-
-    <style>
-        html, body {
-            margin:0px;
-            min-height: 100%;
-            height:100%;
-        }
-        #dfanetwork {
-            height:100%;
-        }
-        #START-STATE {
-            position: fixed;
-            top: 0;
-            left: 0;
-            margin: 5px 5px 5px 5px;
-        }
-    </style>
-    
     <script type="text/javascript" src="js/vis-network.min.js"></script>
 
     <script type="text/javascript" src="js/brython.js"></script>
     <script type="text/javascript" src="js/brython_stdlib.js"></script>
 
     <script type="text/python" src="py/converter.py"></script>
-</head>
-<body id="body" onload="brython(1)">
-    <div id="dfanetwork">
-    <!-- <div id="dfanetwork"> -->
-        <div class="vis-network" style="position: relative; overflow: hidden; touch-action: pan-y; user-select: none; width: 100%; height: 100%;" tabindex="0">
-            <canvas style="position: relative; touch-action: none; user-select: none; width: 100%; height: 100%;" width="600" height="100"></canvas>
-        </div>
+    <style>
+      html,
+      body {
+        margin: 0px;
+        min-height: 100%;
+        height: 100%;
+      }
+      #dfanetwork {
+        height: 100%;
+      }
+      #START-STATE {
+        position: fixed;
+        top: 0;
+        left: 0;
+        margin: 5px 5px 5px 5px;
+      }
+
+      table,
+      td,
+      th {
+        border: 1px solid black;
+        border-collapse: collapse;
+        padding: 1em;
+      }
+      table {
+        margin-left: auto;
+        margin-right: auto;
+        vertical-align: middle;
+      }
+      #nfaTableBox {
+        text-align: center;
+      }
+      #dfaTableBox {
+        text-align: center;
+      }
+      #dfanetwork {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body id="body" onload="brython(1)">
+    <div id="nfaTableBox">
+      <h1>The NFA Table</h1>
     </div>
 
-    <h3 id="START-STATE"></h3>
+    <div id="dfaTableBox">
+      <h1>The DFA Table</h1>
+    </div>
+
+    <div id="dfanetwork">
+      <h1>The DFA</h1>
+      <div
+        class="vis-network"
+        style="position: relative; overflow: hidden; touch-action: pan-y; user-select: none; width: 100%; height: 100%"
+        tabindex="0"
+      >
+        <canvas style="position: relative; touch-action: none; user-select: none; width: 100%; height: 100%" width="600" height="100"></canvas>
+      </div>
+    </div>
 
     <script onload="brython(1)">
-        async function start()
-        {
-            while(1)
-            {
-                if(window.pythonNFA2DFA) break;
-                await new Promise(r => setTimeout(r, 100));
-            }
-
-            const queryString = window.location.search;
-            const urlParams = new URLSearchParams(queryString);
-            let nfaJson = urlParams.get('nfa')
-
-            console.log(nfaJson);
-            nfaJson = JSON.parse(nfaJson);
-
-            nfaJson["mode"] = 1;
-
-            var index = nfaJson["alphabet"].indexOf("");
-            if (index !== -1) nfaJson["alphabet"].splice(index, 1);
-            nfaJson["alphabet"].push("ε")
-
-            for(let i = 0; i < nfaJson["edges"].length; i++)
-                if(nfaJson["edges"][i]["input"] === "") nfaJson["edges"][i]["input"] = "ε";
-            
-            nfaJson = JSON.stringify(nfaJson);
-            console.log(nfaJson);
-
-            const dfa = JSON.parse(window.pythonNFA2DFA(nfaJson))
-            // const dfa = JSON.parse(dfaJson)
-            console.log(dfa);
-
-            document.getElementById("START-STATE").innerText = "Initial State: " + dfa["initial"];
-            // dfa = ;
-            // console.log(result);
-
-            let nodes = []
-            for(let i = 0; i < dfa.states.length; i++)
-            {
-                let bw = 1;
-                if(dfa.final.includes(dfa.states[i])) bw = 5;
-                nodes.push({ id: dfa.states[i], label: dfa.states[i], shape:"circle", borderWidth: bw }) 
-            }
-            nodes = new vis.DataSet(nodes)
-
-            let edges = []
-
-            let transitionStates = Object.keys(dfa.transitions)
-            let transitionsOfStates = Object.values(dfa.transitions)
-            for(let i = 0; i < transitionStates.length; i++)
-            {
-                fromState = transitionStates[i]
-                triggers = Object.keys(transitionsOfStates[i])
-                toStates = Object.values(transitionsOfStates[i])
-                
-                for(let j = 0; j < triggers.length; j++)
-                {
-                    let found = false;
-                    for(let k = 0; k < edges.length; k++)
-                    {
-                        if(edges[k].from === fromState && edges[k].to === toStates[j])
-                        {
-                            edges[k].label = edges[k].label + "," + triggers[j];
-                            found = true;
-                            break;
-                        }
-                    }
-                    if(!found) edges.push({ from: fromState, to: toStates[j], label: triggers[j], arrows: "to" })
-                }
-            }
-            edges = new vis.DataSet(edges)
-            
-            // create a network
-            var container = document.getElementById("dfanetwork");
-            var data = {
-                nodes: nodes,
-                edges: edges,
-            };
-            var options = {};
-            var network = new vis.Network(container, data, options);
+      async function start() {
+        while (1) {
+          if (window.pythonNFA2DFA) break;
+          await new Promise((r) => setTimeout(r, 100));
         }
 
-        start();
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        let nfaJson = urlParams.get('nfa');
+
+        console.log(nfaJson);
+        nfaJson = JSON.parse(nfaJson);
+
+        nfaJson['mode'] = 1;
+
+        var index = nfaJson['alphabet'].indexOf('');
+        if (index !== -1) nfaJson['alphabet'].splice(index, 1);
+        nfaJson['alphabet'].push('ε');
+
+        for (let i = 0; i < nfaJson['edges'].length; i++) if (nfaJson['edges'][i]['input'] === '') nfaJson['edges'][i]['input'] = 'ε';
+
+        StringNfaJson = JSON.stringify(nfaJson);
+        console.log(nfaJson);
+
+        const dfa = JSON.parse(window.pythonNFA2DFA(StringNfaJson));
+        console.log(dfa);
+        nfaTableVar = dfa['nfaTable'];
+        dfaTableVar = dfa['dfaTable'];
+        console.log(nfaTableVar);
+
+        //NFA Table
+
+        // intial row
+        let nfaTable = document.createElement('table');
+        let thead = document.createElement('thead');
+        let tbody = document.createElement('tbody');
+
+        let row = document.createElement('tr');
+        let heading = document.createElement('th');
+        let Tabledata = document.createElement('td');
+        heading.innerHTML = '';
+        row.appendChild(heading);
+        for (let i = 0; i < nfaJson['alphabet'].length; i++) {
+          heading = document.createElement('th');
+          heading.innerHTML = nfaJson['alphabet'][i];
+          row.appendChild(heading);
+        }
+        thead.appendChild(row);
+        nfaTable.appendChild(thead);
+
+        for (let i = 0; i < nfaJson['nodes'].length; i++) {
+          row = document.createElement('tr');
+          Tabledata = document.createElement('td');
+          Tabledata.innerHTML = nfaJson['nodes'][i].name;
+          row.appendChild(Tabledata);
+
+          for (let j = 0; j < nfaJson['alphabet'].length; j++) {
+            Tabledata = document.createElement('td');
+            Tabledata.innerHTML = nfaTableVar[nfaJson['nodes'][i].name][nfaJson['alphabet'][j]].replaceAll("'", '');
+            row.appendChild(Tabledata);
+          }
+
+          tbody.appendChild(row);
+        }
+
+        nfaTable.appendChild(tbody);
+        document.getElementById('nfaTableBox').appendChild(nfaTable);
+        //DFA Table
+
+        // intial row
+        let dfaTable = document.createElement('table');
+        thead = document.createElement('thead');
+        tbody = document.createElement('tbody');
+
+        row = document.createElement('tr');
+        heading = document.createElement('th');
+        Tabledata = document.createElement('td');
+        heading.innerHTML = '';
+        row.appendChild(heading);
+        for (let i = 0; i < nfaJson['alphabet'].length - 1; i++) {
+          heading = document.createElement('th');
+          heading.innerHTML = nfaJson['alphabet'][i];
+          row.appendChild(heading);
+        }
+        thead.appendChild(row);
+        dfaTable.appendChild(thead);
+
+        for (let i = 0; i < dfa['states'].length; i++) {
+          row = document.createElement('tr');
+          Tabledata = document.createElement('td');
+          Tabledata.innerHTML = dfa['states'][i].replaceAll("'", '');
+          row.appendChild(Tabledata);
+
+          for (let j = 0; j < nfaJson['alphabet'].length - 1; j++) {
+            Tabledata = document.createElement('td');
+            Tabledata.innerHTML = dfaTableVar[dfa['states'][i]][nfaJson['alphabet'][j]].replaceAll("'", '');
+            row.appendChild(Tabledata);
+          }
+
+          tbody.appendChild(row);
+        }
+
+        dfaTable.appendChild(tbody);
+        document.getElementById('dfaTableBox').appendChild(dfaTable);
+
+        //document.getElementById('START-STATE').innerText = 'Initial State: ' + dfa['initial'];
+        // dfa = ;
+        // console.log(result);
+
+        let nodes = [];
+        for (let i = 0; i < dfa.states.length; i++) {
+          let bw = 1;
+          if (dfa.final.includes(dfa.states[i])) bw = 5;
+          nodes.push({ id: dfa.states[i], label: dfa.states[i], shape: 'circle', borderWidth: bw });
+        }
+        nodes = new vis.DataSet(nodes);
+
+        let edges = [];
+
+        let transitionStates = Object.keys(dfa.transitions);
+        let transitionsOfStates = Object.values(dfa.transitions);
+        for (let i = 0; i < transitionStates.length; i++) {
+          fromState = transitionStates[i];
+          triggers = Object.keys(transitionsOfStates[i]);
+          toStates = Object.values(transitionsOfStates[i]);
+
+          for (let j = 0; j < triggers.length; j++) {
+            let found = false;
+            for (let k = 0; k < edges.length; k++) {
+              if (edges[k].from === fromState && edges[k].to === toStates[j]) {
+                edges[k].label = edges[k].label + ',' + triggers[j];
+                found = true;
+                break;
+              }
+            }
+            if (!found) edges.push({ from: fromState, to: toStates[j], label: triggers[j], arrows: 'to' });
+          }
+        }
+        edges = new vis.DataSet(edges);
+
+        // create a network
+        var container = document.getElementById('dfanetwork');
+        var data = {
+          nodes: nodes,
+          edges: edges,
+        };
+        var options = {};
+        var network = new vis.Network(container, data, options);
+      }
+
+      start();
     </script>
-</body>
+  </body>
 </html>

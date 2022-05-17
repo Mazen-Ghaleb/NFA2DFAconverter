@@ -1,7 +1,9 @@
-import copy, json
+import copy
+import json
 
 # Variable to help in debugging
 debugger = 0
+
 
 def startProcessing(convertedJson):
     nodes = []
@@ -42,31 +44,32 @@ def startProcessing(convertedJson):
 
     Result = Convert2DFA(nodes, edges, Alphabet, startNode, mode)
 
-    print("\nThe NFA TABLE is \n", Result[0],
-          "\nThe DFA Structure is \n", Result[1])
+    if (debugger == 1):
+        print("\nThe NFA TABLE is \n", Result[0],
+              "\nThe DFA Structure is \n", Result[1])
 
-    print("The Result in format :\n", set(Result[1].keys()),
-          Alphabet[:-1], Result[1], Result[2], Result[3])
+        print("The Result in format :\n", list(Result[1].keys()),
+              Alphabet[:-1], Result[1], Result[2], Result[3])
 
     Result2 = NumberToStates(Result, MappingNumberstoStates, Alphabet)
 
-    print("\nAfter Mapping : ")
-    print("The Result in format :\n", set(Result2[1].keys()),
+    if (debugger == 1):
+        print("\nAfter Mapping : ")
+    print("\nThe NFA TABLE is \n", Result2[0],
+    "\nThe DFA Structure is \n", Result2[1])
+    print("The Result in format :\n", list(Result2[1].keys()),
           Alphabet[:-1], Result2[1], Result2[2], Result2[3])
-    
-    # print(list(set(Result2[1].keys())))
-    # print(Result2[1])
-    # print("BRROROOo")
-
-    # Result2 for
 
     return json.dumps({
-      "states": list(set(Result2[1].keys())),
-      "alphabet": Alphabet[:-1],
-      "transitions": Result2[1],
-      "initial": repr(Result2[2]),
-      "final": list(Result2[3])
+        "states": list(Result2[1].keys()),
+        "alphabet": Alphabet[:-1],
+        "transitions": Result2[1],
+        "initial": repr(Result2[2]),
+        "final": list(Result2[3]),
+        "nfaTable": Result2[0],
+        "dfaTable": Result2[1],
     })
+
 
 def StatesToNumbers(convertedJson):
     MappingStatestoNumber = {}
@@ -105,8 +108,8 @@ def NumberToStates(Result, MappingNumberstoStates, Alphabet):
             Result2NFA[MappingNumberstoStates[key]] = Result2NFA.pop(key)
 
         for alph in Alphabet:
-            Result2NFA[MappingNumberstoStates[key]][alph] = SetNumbersToStates(
-                Result2NFA[MappingNumberstoStates[key]][alph], MappingNumberstoStates)
+            Result2NFA[MappingNumberstoStates[key]][alph] = repr(SetNumbersToStates(
+                Result2NFA[MappingNumberstoStates[key]][alph], MappingNumberstoStates))
 
     for key in list(Result2DFA.keys()):
         if key == 'Φ':
@@ -275,6 +278,7 @@ def getEpsilonClosure(NFA_Table, nodeName):
 def pythonNFA2DFA(jsonString):
     print(json.dumps(json.loads(jsonString)))
     return startProcessing(json.loads(jsonString))
+
 
 try:
     from browser import window
